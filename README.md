@@ -1,4 +1,7 @@
-This project aims to take a CSV extract of the option prices and output an implied Probability Density Function from the option prices.
+This project aims to take a CSV extract of the option prices and output an implied Probability Density Function from the option prices. Here my input is a simple extract from Deribit. On the top right, you can see the CSV file. I want to be able to quickly generate this PDF using this CSV file. 
+
+![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/8069d1f4-9916-4b7c-9550-8c49e2c0b2a4)
+
 
 The method used for this project is described in the file below. 
 
