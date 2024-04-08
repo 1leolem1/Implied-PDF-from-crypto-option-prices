@@ -4,7 +4,7 @@ The method used for this project is described in the file below.
 
 https://www.morganstanley.com/content/dam/msdotcom/en/assets/pdfs/Options_Probabilities_Exhibit_Link.pdf
 
-Using bid and asks marks in the CSV file, we can easily price our butterflies. If this data doesn't give enough accuracy, I will calibrate a SABR stochastic volatility model to price options.
+Using bids and asks marks in the CSV file, we can easily price our butterflies. If this data doesn't give enough accuracy, I will calibrate a SABR stochastic volatility model to price options.
 
 ![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/9b98c48e-cc81-4e75-a36c-3503838edf24)
 
