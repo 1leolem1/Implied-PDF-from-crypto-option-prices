@@ -1,6 +1,6 @@
 This projects aims to take a CSV extract of the option prices and output an implied Probability Density Function from the option prices.
 
-The method used for this project is the one from the pdf file below. 
+The method used for this project is described in the file below. 
 
 https://www.morganstanley.com/content/dam/msdotcom/en/assets/pdfs/Options_Probabilities_Exhibit_Link.pdf
 
