@@ -28,5 +28,20 @@ Using bids and asks marks in the CSV file, it is easy to price butterflies. Howe
 Given the number of option prices we're dealing with, SABR stochastic volatility (plot below) is much better than interpolation since we won't risk overfitting our option prices.  
 ![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/27fabed8-ce70-49d5-9b2e-6727fab1f79b)
 
+
+<h4>Data processing</h4>
+
+The options data file doesn't include the price of the underlying future, which means we need to extract it from the option prices.
+Assuming zero rates, the Put-Call Parity (PCP) states:
+Call_Price - Put_Price = Underlying_Price - Strike_Price 
+
+Since in crypto our Call and Put prices are expressed in units of underlying, we can write PCP as:
+(Call_Price - Put_Price)Underlying_Price = Underlying_Price - Strike_Price 
+
+Solving for Spot:
+Underlying = - (Strike)/(Call - Put - 1)
+
+Using this formula on all option pairs and averaging the Underlying yields a quite strong approximation of the underlying future price.  
+
 I am still far from finished with this project, but I wanted to make an initial commit.
 
