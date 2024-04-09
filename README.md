@@ -19,7 +19,7 @@ Let's look at a sample example:
 Man City are playing Luton at home (which they are this weekend), they have a payoff of 1.1 
 Their implied odds of winning are 1/1.1 ~ 91% (including the premium charged by the bookmaker)
 
-It's the same thing in this case. You pay a premium p betting the stock will expire in the butterfly range. Using simple geometry, your average payoff will be 1/2 * range_width.
+It's the same thing in this case. You pay a premium p betting the stock will expire in the butterfly range. The average payoff will be max_payoff/2 = bfly_range/2.
 
 The implied odds for this range are given by: premium / average payoff
 
