@@ -33,12 +33,15 @@ Given the number of option prices we're dealing with, SABR stochastic volatility
 
 The options data file doesn't include the price of the underlying future, which means we need to extract it from the option prices.
 Assuming zero rates, the Put-Call Parity (PCP) states:
+
 Call_Price - Put_Price = Underlying_Price - Strike_Price 
 
 Since in crypto our Call and Put prices are expressed in units of underlying, we can write PCP as:
+
 (Call_Price - Put_Price)Underlying_Price = Underlying_Price - Strike_Price 
 
 Solving for Spot:
+
 Underlying = - (Strike)/(Call - Put - 1)
 
 Using this formula on all option pairs and averaging the Underlying yields a quite strong approximation of the underlying future price.  
