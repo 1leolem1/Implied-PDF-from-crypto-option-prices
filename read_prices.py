@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from matplotlib.lines import Line2D
+import SABR_calibration as s
+import SABR_functions as sabr
 
 
 class option_prices():
@@ -52,14 +54,11 @@ class option_prices():
     def plot_bid_ask(self, puts=True, calls=True):
 
         plt.figure(figsize=(12, 8))
-
         df = self.df
-
         if not calls:
             df = df[df["type"] != "C"]
         if not puts:
             df = df[df["type"] != "P"]
-
         for option in df.iterrows():
             if not math.isnan(option[1]["iv_bid"]):
                 plt.scatter(option[1]["strike"], option[1]["iv_bid"],
@@ -70,9 +69,7 @@ class option_prices():
 
         legend_elements = [Line2D([0], [0], marker='o', color='cyan', label='Ask', markerfacecolor='cyan', markersize=10),
                            Line2D([0], [0], marker='o', color='red', label='Bid', markerfacecolor='red', markersize=10)]
-
         # Add legend with custom handles and labels
-
         plt.legend(handles=legend_elements, loc='best')
         plt.title(
             f"{self.underlying} options implied volatility for {self.exp} expiry", fontweight="bold")
@@ -103,5 +100,70 @@ class option_prices():
                 found_atm_fwd.append(spot)
         return round(np.mean(found_atm_fwd), 2)
 
-    def calibrate_SABR(self):
+    def calibrate_SABR(self, method="Newton-CG", init_values=[0.99, 1, -0.1, 0.99]):
+
+        k = np.array(self.calls["strike"])
+        v = np.array(self.calls["iv_ask"])/100
+        alpha, beta, rho, nu = init_values
+
+        alpha, beta, rho, nu = s.calibrate_SABR(strikes=k,
+                                                volatilities=v,
+                                                forward=self.atm,
+                                                TTM=self.ttm,
+                                                method=method)
+
+        x = np.linspace(k[0]-5000, k[-1]+5000, 1000)
+        y = []
+
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+
+        plt.figure(figsize=(12, 8))
+        plt.plot(x, 100*np.array(y), label="Ask SABR Calibration")
+        plt.scatter(k, 100*v, marker="+", color="c", label="Asks IV")
+        plt.title(
+            "Calibration of SABR to BTC call options' implied volatility bid and asks", fontweight="bold")
+        # plt.title(f"alpha: {alpha}, beta:{beta}, rho:{rho}, nu:{nu}")
+        plt.xlabel("Strike (in USD)")
+        plt.grid(alpha=0.3)
+        plt.ylabel("Implied vol (in %)")
+
+        # Same for bids
+
+        k = np.array(self.calls["strike"])
+        v = np.array(self.calls["iv_bid"])/100
+        alpha, beta, rho, nu = init_values
+
+        alpha, beta, rho, nu = s.calibrate_SABR(strikes=k,
+                                                volatilities=v,
+                                                forward=self.atm,
+                                                TTM=self.ttm,
+                                                method=method)
+
+        x = np.linspace(k[0]-5000, k[-1]+5000, 1000)
+        y = []
+
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+        plt.plot(x, 100*np.array(y), label="Bid SABR Calibration")
+        plt.scatter(k, 100*v, marker="+", color="r", label="Bids IV")
+
+        plt.axvline(self.atm, linestyle="--", linewidth=0.5,
+                    label="Forward price", color="0")
+
+        plt.legend()
+        plt.show()
+
         return 0

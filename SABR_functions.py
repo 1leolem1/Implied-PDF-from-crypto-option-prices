@@ -43,19 +43,3 @@ def get_gk_price(w, forward, term_rate, base_rate, ttm, vol, strike):
     value = w*np.exp(-term_rate) * \
         (forward*norm.cdf(w*d1) - strike*norm.cdf(w*d2))
     return value
-
-
-def strike_volatility_SABR(k, f, alpha, beta, nu, rho, T):
-    """  
-    f: forward rate
-    k: strike
-    t: time to maturity (in years)
-    """
-    z = (nu/alpha)*(f*k)**((1-beta)/2)*np.log(f/k)
-    x = np.log((np.sqrt(1-2*rho*z+z**2)+z-rho)/(1-rho))  # x(z)
-    num = alpha*(1+(((1-beta)**2)/24)*(alpha**2/((f*k)**(1-beta))) + 0.25 *
-                 (rho*beta*nu*alpha)/((f*k)**((1-beta)/2))+((2-3*rho**2)/24)*nu**2) * T
-    denum = (f * k) ** ((1 - beta) / 2) * (1 + ((1 - beta) ** 2 / 24) *
-                                           (np.log(f / k) ** 2) + ((1 - beta) ** 4 / 1920) * (np.log(f / k) ** 4))
-    vol_bs = (num/denum) * (z/x)
-    return vol_bs
