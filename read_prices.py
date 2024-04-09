@@ -45,6 +45,9 @@ class option_prices():
         exp_date_str = self.df["date"].iloc[0]
         self.exp = dt.strptime(exp_date_str, "%d%b%y")
         self.atm = self.find_atm_pcp()
+        # ASSUMES CURRENT PRICING DATE !!!! > in years tho
+        self.ttm = (self.exp - dt.today()).days/365 + \
+            (self.exp - dt.today()).seconds/(3600*24*365)
 
     def plot_bid_ask(self, puts=True, calls=True):
 
@@ -77,50 +80,15 @@ class option_prices():
         plt.ylabel(f"Implied volatility (in %)")
         plt.show()
 
-    def find_atm(self):
-        # Gets the underlying future price implied by option prices
-        # I do that with an interpolation of strike and delta to find what strike has exactly 0.5 delta
-
-        delta = 0.5
-        df = self.filterfree_df
-
-        def interp_helper(x_0, x_1, y_0, y_1, x):
-            # linear interpolation
-            out = y_0 + (x - x_0)*((y_1 - y_0)/(x_1-x_0))
-            return out
-        # calls
-        row_below = df[df['delta'] < delta].sort_values(by="delta").iloc[-1]
-        row_above = df[df['delta'] > delta].sort_values(by="delta").iloc[0]
-        atm_call = interp_helper(x_0=row_below["delta"],
-                                 x_1=row_above["delta"],
-                                 y_0=row_below["strike"],
-                                 y_1=row_above["strike"],
-                                 x=0.5)
-        # puts
-        row_below = df[df['delta'] < -delta].sort_values(by="delta").iloc[-1]
-        row_above = df[df['delta'] > -delta].sort_values(by="delta").iloc[0]
-        atm_put = interp_helper(x_0=row_below["delta"],
-                                x_1=row_above["delta"],
-                                y_0=row_below["strike"],
-                                y_1=row_above["strike"],
-                                x=-0.5)
-        atm_fwd = (atm_put + atm_call)/2
-        return atm_fwd
-
     def find_atm_pcp(self):
-        # lets try with put call parity cause previously was shit
-
+        # deriving the fwd price from atm price
         df = self.filterfree_df.groupby("strike")
-
         found_atm_fwd = []
-
         for strike in df:
-
             if not strike[1]["mark_mid"].isna().any():
                 i = strike[1]
                 call = i[i["type"] == "C"]
                 put = i[i["type"] == "P"]
-
                 """
                 Original PCP assuming 0 interest rate:
                 Call Price - Put Price = Spot Price - Strike Price
@@ -130,7 +98,6 @@ class option_prices():
                 
                 since option price is in units and not in USD
                 """
-
                 spot = - float(call["strike"]) / \
                     (float(call["mark_mid"]) - float(put["mark_mid"])-1)
                 found_atm_fwd.append(spot)
