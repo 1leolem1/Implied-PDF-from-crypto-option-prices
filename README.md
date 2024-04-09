@@ -25,7 +25,7 @@ The implied odds for this range are given by: premium / average payoff
 
 Using bids and asks marks in the CSV file, it is easy to price butterflies. However, this isn't accurate enough since there are insufficient data points. I will calibrate a SABR stochastic volatility model to the mid-price, recreating a volatility smile. However, this strategy might not be representative and I might want to calibrate the model to the bids and asks to include trading costs.
 
-SABR Stochastic volatility (plot below) is much better than interpolation since we won't have an overfitting problem with it. And since our code takes a lot of option prices, it is better to avoid overfitting data. 
+Given the number of option price we're dealing with, SABR stochastic volatility (plot below) is much better than interpolation since we won't risk overfitting our option prices.  
 ![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/27fabed8-ce70-49d5-9b2e-6727fab1f79b)
 
 I am still far from finished with this project, but I wanted to make an initial commit.
