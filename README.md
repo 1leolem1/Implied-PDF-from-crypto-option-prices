@@ -49,6 +49,13 @@ Using this formula on all option pairs and averaging the Underlying yields a qui
 
 
 
+<h4>Resulting PDF</h4>
+
+Below is what I came up with thanks to my .price_butterfly() function. Even if it seems wrong for such maturity, it looks like a proper PDF so I'm already pretty proud. 
+
+![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/d3daadbe-a9bc-4797-a993-87db331522a9)
+
+
 
 I am still far from finished with this project, but I wanted to make an initial commit.
 
