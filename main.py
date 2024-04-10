@@ -14,8 +14,9 @@ Last one seems to be quite innacurate tho
 
 def main():
     a = option_prices(name="BTC-26APR")
-    # a.plot_bid_ask(calls=False)
     a.calibrate_SABR(method='L-BFGS-B')
+    a.plot_bid_ask_SABR_puts()
+    a.plot_bid_ask_SABR_calls()
 
 
 if __name__ == "__main__":

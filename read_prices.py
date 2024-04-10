@@ -100,21 +100,116 @@ class option_prices():
                 found_atm_fwd.append(spot)
         return round(np.mean(found_atm_fwd), 2)
 
-    def calibrate_SABR(self, method="Newton-CG", init_values=[0.99, 1, -0.1, 0.99]):
+    def calibrate_SABR(self, method="Newton-CG", init_values=[0.99, 1, -0.1, 0.99], number_of_tries=10):
+        # Calls asks
+        print("Calls asks:")
 
+        best_params = None
+        best_mse = float('inf')  # Initialize with positive infinity
+        k = np.array(self.calls["strike"])
+        v = np.array(self.calls["iv_ask"]) / 100
+
+        for _ in range(number_of_tries):
+            init_values = [np.random.uniform(0.01, 1),
+                           1,
+                           np.random.uniform(-1, 1),
+                           np.random.uniform(0.01, 1)]
+            [alpha, beta, rho, nu], mse = s.calibrate_SABR(strikes=k,
+                                                           volatilities=v,
+                                                           forward=self.atm,
+                                                           TTM=self.ttm,
+                                                           method=method,
+                                                           init_param=init_values)
+            if mse < best_mse:
+                best_mse = mse
+                best_params = [alpha, beta, rho, nu]
+        print(f"-> Best MSE: {round(best_mse, 8)} ")
+        self.SABR_call_params_asks = best_params
+
+        # Calls bids
+        print("Call bids:")
+
+        best_params = None
+        best_mse = float('inf')  # Initialize with positive infinity
+        v = np.array(self.calls["iv_bid"])/100
+
+        for _ in range(number_of_tries):
+            init_values = [np.random.uniform(0.01, 1),
+                           1,
+                           np.random.uniform(-1, 1),
+                           np.random.uniform(0.01, 1)]
+            [alpha, beta, rho, nu], mse = s.calibrate_SABR(strikes=k,
+                                                           volatilities=v,
+                                                           forward=self.atm,
+                                                           TTM=self.ttm,
+                                                           method=method,
+                                                           init_param=init_values
+                                                           )
+            self.SABR_call_params_bids = [alpha, beta, rho, nu]
+            if mse < best_mse:
+                best_mse = mse
+                best_params = [alpha, beta, rho, nu]
+        print(f"-> Best MSE: {round(best_mse, 8)} ")
+        self.SABR_call_params_bids = best_params
+
+        # Puts asks
+        print("Put asks:")
+
+        best_params = None
+        best_mse = float('inf')  # Initialize with positive infinity
+        k = np.array(self.puts["strike"])
+        v = np.array(self.puts["iv_ask"])/100
+
+        for _ in range(number_of_tries):
+            init_values = [np.random.uniform(0.01, 1),
+                           1,
+                           np.random.uniform(-1, 1),
+                           np.random.uniform(0.01, 1)]
+            [alpha, beta, rho, nu], mse = s.calibrate_SABR(strikes=k,
+                                                           volatilities=v,
+                                                           forward=self.atm,
+                                                           TTM=self.ttm,
+                                                           method=method,
+                                                           init_param=init_values)
+            if mse < best_mse:
+                best_mse = mse
+                best_params = [alpha, beta, rho, nu]
+        print(f"-> Best MSE: {round(best_mse, 8)} ")
+        self.SABR_put_params_asks = best_params
+
+        # Puts bids
+        print("Put bids:")
+        best_params = None
+        best_mse = float('inf')  # Initialize with positive infinity
+        v = np.array(self.puts["iv_bid"])/100
+
+        for _ in range(number_of_tries):
+            init_values = [np.random.uniform(0.01, 1),
+                           1,
+                           np.random.uniform(-1, 1),
+                           np.random.uniform(0.01, 1)]
+            [alpha, beta, rho, nu], mse = s.calibrate_SABR(strikes=k,
+                                                           volatilities=v,
+                                                           forward=self.atm,
+                                                           TTM=self.ttm,
+                                                           method=method,
+                                                           init_param=init_values)
+            if mse < best_mse:
+                best_mse = mse
+                best_params = [alpha, beta, rho, nu]
+
+        print(f"-> Best MSE: {round(best_mse, 8)} ")
+        self.SABR_put_params_bids = best_params
+
+    def plot_bid_ask_SABR_calls(self):
+
+        plt.figure(figsize=(12, 8))
         k = np.array(self.calls["strike"])
         v = np.array(self.calls["iv_ask"])/100
-        alpha, beta, rho, nu = init_values
+        x, y = np.linspace(k[0]-5000, k[-1]+5000, 1000), []
 
-        alpha, beta, rho, nu = s.calibrate_SABR(strikes=k,
-                                                volatilities=v,
-                                                forward=self.atm,
-                                                TTM=self.ttm,
-                                                method=method)
-
-        x = np.linspace(k[0]-5000, k[-1]+5000, 1000)
-        y = []
-
+        # asks
+        alpha, beta, rho, nu = self.SABR_call_params_asks
         for i in x:
             y.append(sabr.strike_volatility_SABR(k=i,
                                                  f=self.atm,
@@ -124,31 +219,18 @@ class option_prices():
                                                  rho=rho,
                                                  t=self.ttm))
 
-        plt.figure(figsize=(12, 8))
         plt.plot(x, 100*np.array(y), label="Ask SABR Calibration")
         plt.scatter(k, 100*v, marker="+", color="c", label="Asks IV")
         plt.title(
             "Calibration of SABR to BTC call options' implied volatility bid and asks", fontweight="bold")
-        # plt.title(f"alpha: {alpha}, beta:{beta}, rho:{rho}, nu:{nu}")
         plt.xlabel("Strike (in USD)")
         plt.grid(alpha=0.3)
         plt.ylabel("Implied vol (in %)")
 
-        # Same for bids
-
-        k = np.array(self.calls["strike"])
-        v = np.array(self.calls["iv_bid"])/100
-        alpha, beta, rho, nu = init_values
-
-        alpha, beta, rho, nu = s.calibrate_SABR(strikes=k,
-                                                volatilities=v,
-                                                forward=self.atm,
-                                                TTM=self.ttm,
-                                                method=method)
-
-        x = np.linspace(k[0]-5000, k[-1]+5000, 1000)
+        # bids
+        alpha, beta, rho, nu = self.SABR_call_params_bids
         y = []
-
+        v = np.array(self.calls["iv_bid"])/100
         for i in x:
             y.append(sabr.strike_volatility_SABR(k=i,
                                                  f=self.atm,
@@ -158,7 +240,7 @@ class option_prices():
                                                  rho=rho,
                                                  t=self.ttm))
         plt.plot(x, 100*np.array(y), label="Bid SABR Calibration")
-        plt.scatter(k, 100*v, marker="+", color="r", label="Bids IV")
+        plt.scatter(k, 100*v, marker="+", color="orange", label="Bids IV")
 
         plt.axvline(self.atm, linestyle="--", linewidth=0.5,
                     label="Forward price", color="0")
@@ -166,4 +248,91 @@ class option_prices():
         plt.legend()
         plt.show()
 
-        return 0
+    def plot_bid_ask_SABR_puts(self):
+        plt.figure(figsize=(12, 8))
+        k = np.array(self.puts["strike"])
+        v = np.array(self.puts["iv_ask"])/100
+        x, y = np.linspace(k[0]-5000, k[-1]+5000, 1000), []
+
+        # asks
+        alpha, beta, rho, nu = self.SABR_put_params_asks
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+
+        plt.plot(x, 100*np.array(y), label="Ask SABR Calibration")
+        plt.scatter(k, 100*v, marker="+", color="c", label="Asks IV")
+        plt.title(
+            "Calibration of SABR to BTC put options' implied volatility bid and asks", fontweight="bold")
+        plt.xlabel("Strike (in USD)")
+        plt.grid(alpha=0.3)
+        plt.ylabel("Implied vol (in %)")
+
+        # bids
+        alpha, beta, rho, nu = self.SABR_put_params_bids
+        y = []
+        v = np.array(self.puts["iv_bid"])/100
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+        plt.plot(x, 100*np.array(y), label="Bid SABR Calibration")
+        plt.scatter(k, 100*v, marker="+", color="orange", label="Bids IV")
+
+        plt.axvline(self.atm, linestyle="--", linewidth=0.5,
+                    label="Forward price", color="0")
+        plt.legend()
+        plt.show()
+
+    def plot_pcp(self):
+
+        # calibrate data first
+
+        # option 1: Synthetic long (sell put buy calls)
+
+        plt.figure(figsize=(12, 8))
+
+        alpha, beta, rho, nu = self.SABR_put_params_bids
+        k_p = np.array(self.puts["strike"])
+        k_c = np.array(self.calls["strike"])
+        x, y = np.linspace(k_p[0]-5000, k_c[-1]+5000, 1000), []
+        v = np.array(self.puts["iv_bid"])/100
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+        plt.plot(x, 100*np.array(y), label="SABR Bid Calibration", color="blue")
+        plt.scatter(k_p, 100*v, marker="+", color="blue", label="Put Bids IV")
+
+        # calls
+
+        alpha, beta, rho, nu = self.SABR_call_params_asks
+        y = []
+        k = np.array(self.calls["strike"])
+        v = np.array(self.calls["iv_ask"])/100
+        for i in x:
+            y.append(sabr.strike_volatility_SABR(k=i,
+                                                 f=self.atm,
+                                                 alpha=alpha,
+                                                 beta=beta,
+                                                 nu=nu,
+                                                 rho=rho,
+                                                 t=self.ttm))
+        plt.plot(x, 100*np.array(y),
+                 label="SABR call Ask Calibration", color="orange")
+        plt.scatter(k, 100*v, marker="+", color="orange", label="Bids IV")
+        plt.legend()
+        plt.show()
