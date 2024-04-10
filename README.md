@@ -51,7 +51,7 @@ Using this formula on all option pairs and averaging the Underlying yields a qui
 
 <h4>Resulting PDF</h4>
 
-Below is what I came up with thanks to my .price_butterfly() function. Even if it seems wrong for such maturity, it looks like a proper PDF so I'm already pretty proud. 
+Below is what I came up with thanks to my .price_butterfly() function. Even if the volatility seems wrong for this maturity, it looks like a proper PDF so I'm already making good progress. 
 
 ![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/c924d9f6-dea3-4f9b-a464-3f540e3d813b)
 
