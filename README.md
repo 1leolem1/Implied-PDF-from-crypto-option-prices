@@ -29,7 +29,6 @@ Given the number of option prices we're dealing with, SABR stochastic volatility
 ![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/35f8f09b-b9b7-4b0c-a463-ae0e93341de7)
 
 
-
 <h4>Data processing</h4>
 
 The options data file doesn't include the price of the underlying future, which means we need to extract it from the option prices.
@@ -48,11 +47,12 @@ Underlying = - (Strike)/(Call - Put - 1)
 Using this formula on all option pairs and averaging the Underlying yields a quite strong approximation of the underlying future price.  
 
 
-
 <h4>Resulting PDF</h4>
 
-Below is what I came up with thanks to my .price_butterfly() function. Even if the volatility seems wrong for this maturity, it looks like a proper PDF so I'm already making good progress. 
+The .plot_pdf_cdf(self) function yields the following plots:
+![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/628c28ee-3849-43fa-a43a-ec857ef6ca6e)
 
-![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/c924d9f6-dea3-4f9b-a464-3f540e3d813b)
+![image](https://github.com/1leolem1/Implied-PDF-from-crypto-option-prices/assets/58358116/49037d9f-d972-499e-9ce4-1c6e2a002126)
 
-I still want to finish a few things such as creating a CDF to get a specific probability based on a range, and I will make adjustments to ensure everything is correct in this project. 
+The main issue with this code is the risk of not converging the calibration. I did a good job randomising the inital_values and calibrating several times to find the best params but this might still not be enough and the algo might fail to converge in some cases. The calibration didn't work as well for 27SEP24 expiration but still produced a strong approximation.
+So far the code prices butterflies with the SABR mid-price curve. It is not considering the spread.
