@@ -89,10 +89,10 @@ class option_prices():
                 """
                 Original PCP assuming 0 interest rate:
                 Call Price - Put Price = Spot Price - Strike Price
-                
+
                 PCP if Price call price in units:
                 Spot = - (Strike)/(Call - Put - 1)
-                
+
                 since option price is in units and not in USD
                 """
                 spot = - float(call["strike"]) / \
@@ -145,11 +145,11 @@ class option_prices():
                                                            method=method,
                                                            init_param=init_values
                                                            )
-            self.SABR_call_params_bids = [alpha, beta, rho, nu]
             if mse < best_mse:
                 best_mse = mse
                 best_params = [alpha, beta, rho, nu]
         print(f"-> Best MSE: {round(best_mse, 8)} ")
+
         self.SABR_call_params_bids = best_params
 
         # Puts asks
@@ -337,88 +337,119 @@ class option_prices():
         plt.legend()
         plt.show()
 
-    def price_butterflies(self, bins=2000):
+    def plot_pdf_cdf(self, bins=200):
 
         bins = bins+1  # bins is no of butterflies
         grid = np.linspace(start=np.min(self.df["strike"]),
-                           stop=np.max(self.df["strike"]),
+                           stop=np.max(self.df["strike"]) + 40000,
                            num=bins)  # create a grid in all options that are liquid enough
-        probabilities = []
+        pdf = []
+
         payoff = grid[1] - grid[0]  # gonna be the same for ea bfly
-
-        print(payoff)
-
         for i in range(len(grid[:-2])):
 
-            option_1_iv = sabr.strike_volatility_SABR(k=grid[i],
-                                                      f=self.atm,
-                                                      alpha=self.SABR_call_params_asks[
-                                                          0],
-                                                      beta=self.SABR_call_params_asks[
-                                                          1],
-                                                      nu=self.SABR_call_params_asks[
-                                                          2],
-                                                      rho=self.SABR_call_params_asks[
-                                                          3],
-                                                      t=self.ttm)  # long so hit ask
+            alpha, beta, rho, nu = self.SABR_call_params_asks
+
+            option_1_iv_b = sabr.strike_volatility_SABR(k=grid[i],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+            option_2_iv_b = sabr.strike_volatility_SABR(k=grid[i+1],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+            option_3_iv_b = sabr.strike_volatility_SABR(k=grid[i+2],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+            # asks
+
+            alpha, beta, rho, nu = self.SABR_call_params_bids
+
+            option_1_iv_a = sabr.strike_volatility_SABR(k=grid[i],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+            option_2_iv_a = sabr.strike_volatility_SABR(k=grid[i+1],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+            option_3_iv_a = sabr.strike_volatility_SABR(k=grid[i+2],
+                                                        f=self.atm,
+                                                        alpha=alpha,
+                                                        beta=beta,
+                                                        nu=nu,
+                                                        rho=rho,
+                                                        t=self.ttm)  # long so hit ask
+
+            option_1_iv = (option_1_iv_a+option_1_iv_b)/2
+            option_2_iv = (option_2_iv_a+option_2_iv_b)/2
+            option_3_iv = (option_3_iv_a+option_3_iv_b)/2
+
             option_1_price = sabr.get_gk_price(w=1,
                                                forward=self.atm,
                                                term_rate=0,
                                                base_rate=0,
                                                ttm=self.ttm,
-                                               vol=option_1_iv*100,
+                                               vol=option_1_iv,
                                                strike=grid[i])
-            print(f"strike={grid[i]}, p={option_1_price}")
-            # sell 2 option 2
-            option_2_iv = sabr.strike_volatility_SABR(k=grid[i+1],
-                                                      f=self.atm,
-                                                      alpha=self.SABR_call_params_bids[
-                                                          0],
-                                                      beta=self.SABR_call_params_bids[
-                                                          1],
-                                                      nu=self.SABR_call_params_bids[
-                                                          2],
-                                                      rho=self.SABR_call_params_bids[
-                                                          3],
-                                                      t=self.ttm)  # long so hit ask
-            option_2_price = sabr.get_gk_price(w=1,
-                                               forward=self.atm,
-                                               term_rate=0,
-                                               base_rate=0,
-                                               ttm=self.ttm,
-                                               vol=option_2_iv*100,
-                                               strike=grid[i+1])
-            option_3_iv = sabr.strike_volatility_SABR(k=grid[i+2],
-                                                      f=self.atm,
-                                                      alpha=self.SABR_call_params_asks[
-                                                          0],
-                                                      beta=self.SABR_call_params_asks[
-                                                          1],
-                                                      nu=self.SABR_call_params_asks[
-                                                          2],
-                                                      rho=self.SABR_call_params_asks[
-                                                          3],
-                                                      t=self.ttm)  # long so hit ask
+
             option_3_price = sabr.get_gk_price(w=1,
                                                forward=self.atm,
                                                term_rate=0,
                                                base_rate=0,
                                                ttm=self.ttm,
-                                               vol=option_3_iv*100,
+                                               vol=option_3_iv,
                                                strike=grid[i+2])
 
-            premium = (option_1_price - 2*option_2_price +
-                       option_3_price)  # both premium and payoff expressed in $
+            option_2_price = sabr.get_gk_price(w=1,
+                                               forward=self.atm,
+                                               term_rate=0,
+                                               base_rate=0,
+                                               ttm=self.ttm,
+                                               vol=option_2_iv,
+                                               strike=grid[i+1])
 
-            # print(
-            #     f"bfly {i}: c1 p= {round(option_1_price, 2)}, c2= {round(option_2_price, 2)}, c3= {round(option_3_price, 2)} -> t ={premium}")
-            probabilities.append(premium/payoff)
+            # print(f"2. {option_2_iv}")
+            pdf.append(-option_1_price + 2*option_2_price - option_3_price)
+
+            # both premium and payoff expressed in $
 
         plt.figure(figsize=(12, 8))
-        plt.plot(grid[:-2], -0.001*np.array(probabilities))
+        plt.plot(grid[:-2], 100*-np.array(pdf)/payoff)
         plt.xlabel("Strike (in $)")
         plt.title(
             f"Implied PDF of {self.underlying} options expiring {self.exp}", fontweight="bold")
+        plt.axhline(0, linewidth=1, color="0")
+        plt.ylabel("Probability (in %)")
+        plt.grid(alpha=0.3)
+        plt.show()
+
+        cdf = np.cumsum(-np.array(pdf)/payoff)
+
+        plt.figure(figsize=(12, 8))
+
+        plt.plot(grid[:-2], 100*cdf)
+        plt.xlabel("Strike (in $)")
+        plt.ylabel("Probability (in %)")
+
+        plt.title(
+            f"Implied CDF of {self.underlying} options expiring {self.exp}", fontweight="bold")
         plt.axhline(0, linewidth=1, color="0")
         plt.grid(alpha=0.3)
         plt.show()

@@ -35,7 +35,7 @@ def get_gk_price(w, forward, term_rate, base_rate, ttm, vol, strike):
     Return value: Price of call option
 
     """
-    T = ttm/365  # from days to years -> calculated using Time Delta
+    T = ttm  # from days to years -> calculated using Time Delta
 
     d1 = (np.log(forward / strike) + (0.5 * vol ** 2) * T) / (vol * np.sqrt(T))
     d2 = (np.log(forward / strike) - (0.5 * vol ** 2) * T) / (vol * np.sqrt(T))
