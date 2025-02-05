@@ -7,6 +7,8 @@ import math
 from matplotlib.lines import Line2D
 import SABR_calibration as s
 import SABR_functions as sabr
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 class option_prices():
@@ -429,27 +431,44 @@ class option_prices():
             pdf.append(-option_1_price + 2*option_2_price - option_3_price)
 
             # both premium and payoff expressed in $
+        cdf = np.cumsum(-np.array(pdf) / payoff)
 
-        plt.figure(figsize=(12, 8))
-        plt.plot(grid[:-2], 100*-np.array(pdf)/payoff)
-        plt.xlabel("Strike (in $)")
-        plt.title(
-            f"Implied PDF of {self.underlying} options expiring {self.exp}", fontweight="bold")
-        plt.axhline(0, linewidth=1, color="0")
-        plt.ylabel("Probability (in %)")
-        plt.grid(alpha=0.3)
-        plt.show()
+        fig = make_subplots(rows=1, cols=2, subplot_titles=("PDF", "CDF"))
 
-        cdf = np.cumsum(-np.array(pdf)/payoff)
+        # Add PDF plot
+        fig.add_trace(go.Scatter(
+            x=grid[:-2], y=100 * -np.array(pdf) / payoff, mode='lines', name='PDF'), row=1, col=1)
 
-        plt.figure(figsize=(12, 8))
+        # Add CDF plot
+        fig.add_trace(go.Scatter(
+            x=grid[:-2], y=100 * cdf, mode='lines', name='CDF'), row=1, col=2)
 
-        plt.plot(grid[:-2], 100*cdf)
-        plt.xlabel("Strike (in $)")
-        plt.ylabel("Probability (in %)")
+        # Update layout
+        fig.update_layout(
+            title=f"Implied PDF and CDF of {self.underlying} options expiring {self.exp.strftime('%A, %B %d, %Y')}",
+            xaxis_title="Strike (in $)",
+            yaxis_title="Probability (in %)",
+            plot_bgcolor='rgba(0,0,0,0)',  # Transparent background
+            height=600,
+            width=1000,
+            showlegend=True
+        )
 
-        plt.title(
-            f"Implied CDF of {self.underlying} options expiring {self.exp}", fontweight="bold")
-        plt.axhline(0, linewidth=1, color="0")
-        plt.grid(alpha=0.3)
-        plt.show()
+        # Add grids to both subplots
+        fig.update_xaxes(showgrid=True, gridwidth=1,
+                         gridcolor='rgba(0,0,0,0.1)', row=1, col=1)
+        fig.update_yaxes(showgrid=True, gridwidth=1,
+                         gridcolor='rgba(0,0,0,0.1)', row=1, col=1)
+        fig.update_xaxes(showgrid=True, gridwidth=1,
+                         gridcolor='rgba(0,0,0,0.1)', row=1, col=2)
+        fig.update_yaxes(showgrid=True, gridwidth=1,
+                         gridcolor='rgba(0,0,0,0.1)', row=1, col=2)
+
+        # Add a horizontal line at y=0 in each subplot
+        fig.add_shape(type="line", x0=grid[:-2].min(), y0=0, x1=grid[:-2].max(), y1=0, line=dict(color="black", width=1),
+                      row=1, col=1)
+        fig.add_shape(type="line", x0=grid[:-2].min(), y0=0, x1=grid[:-2].max(), y1=0, line=dict(color="black", width=1),
+                      row=1, col=2)
+
+        # Show the plot
+        fig.show()
