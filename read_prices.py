@@ -20,6 +20,13 @@ class option_prices():
                                 'ndelta', 'delta', 'last', 'bid_size', 'iv_bid', 'bid', 'mark', 'ask', 'iv_ask', 'ask_size']
 
         found = False
+
+        """
+        THE ACTUAL FUCK IS THIS GARB??? NEEDED TO INPUT A STRIKE (x) AND VOL (y) ARRAY 
+
+        This way API can come in and create an instance of option_prices
+        
+        """
         for file in os.listdir():
             if ".csv" in str(file) and name in file:
                 self.df = pd.read_csv(file, header=0, names=header)
