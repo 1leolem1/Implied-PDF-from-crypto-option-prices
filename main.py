@@ -18,9 +18,9 @@ def main():
     # a = option_prices(name="BTC-27DEC")
     a = option_prices(name="ETH-27SEP")
 
-    a.calibrate_SABR(method='L-BFGS-B')
-    a.plot_bid_ask_SABR_calls()
-    a.plot_pdf_cdf()
+    # a.calibrate_SABR(method='L-BFGS-B')
+    # a.plot_bid_ask_SABR_calls()
+    # a.plot_pdf_cdf()
 
 
 if __name__ == "__main__":

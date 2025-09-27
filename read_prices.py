@@ -60,6 +60,9 @@ class option_prices():
         self.ttm = (self.exp - dt.today()).days/365 + \
             (self.exp - dt.today()).seconds/(3600*24*365)
 
+        self.df.to_csv(
+            f"{self.underlying}-{self.exp.strftime('%d%b%y')}-filtered.csv")
+
     def plot_bid_ask(self, puts=True, calls=True):
 
         plt.figure(figsize=(12, 8))
