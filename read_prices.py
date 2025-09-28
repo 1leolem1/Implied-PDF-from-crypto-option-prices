@@ -90,13 +90,15 @@ class option_prices():
             sabr_vols = [sabr.strike_volatility_SABR(k=ki, f=self.atm, alpha=alpha,
                                                      beta=beta, nu=nu, rho=rho, t=self.ttm) for ki in k_range]
 
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 6), dpi=150)
             plt.plot(k_range, sabr_vols, label='SABR Model', color='blue')
-            plt.scatter(k, v, color='red',
-                        label='Market Implied Volatilities')
+            plt.scatter(k, v, color='red', label='Market Implied Volatilities')
+            plt.axvline(self.atm, color='black', linestyle='--', alpha=0.6,
+                        label=f'ATM (USDC${self.atm:,.2f})')
             plt.xlabel('Strike Price')
             plt.ylabel('Implied Volatility')
-            plt.title('SABR Model Calibration to Market Data')
+            plt.title(
+                f'SABR Calibration to options expiring {self.exp.strftime("%d-%b-%Y")}', fontweight='bold')
             plt.legend()
             plt.grid(alpha=0.3)
             plt.show()
