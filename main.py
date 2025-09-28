@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 from read_prices import option_prices
+import read_prices as rp
+
 
 """
 methods for calibration:
@@ -16,13 +18,24 @@ def main():
 
     # test data - conservative vol smile in a risk adverse market
 
-    K = [25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 65000, 70000]
-    ImpliedVol = [0.98, 0.84, 0.74, 0.65, 0.58, 0.55, 0.57, 0.65, 0.79, 0.94]
+    print(rp.get_available_options("BTC"))
 
-    a = option_prices(K, ImpliedVol, date="26Jan26", atm=49950)
-    print(a)
+    expiry = "27MAR26"  # for example, choose expiry "26Dec25"
+    min_bid_ask_spread = 10  # set a minimum bid-ask spread threshold
+
+    atm = rp.get_forward_price(expiry, underlying="BTC")
+    print(f"ATM forward price: {atm}")
+
+    option_data = rp.get_option_data(date=expiry, underlying="BTC")
+
+    a = option_prices(K=list(option_data["strike"]),
+                      ImpliedVol=list(
+        option_data["mark_iv"]),
+        date=expiry, atm=atm)
 
     a.calibrate_SABR()
+
+    # Plot the SABR model fits
     a.plot_sabr()
 
 
